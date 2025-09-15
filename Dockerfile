@@ -13,6 +13,5 @@ RUN mvn clean package -DskipTests
 FROM eclipse-temurin:17-jdk AS runtime
 WORKDIR /app
 COPY --from=build /build/target/p2p-1.0-SNAPSHOT.jar app.jar
-COPY --from=build /build/target/dependency/*.jar ./lib/
 EXPOSE 8080
-CMD ["java", "-cp", "app.jar:lib/*", "p2p.App"]
+CMD ["java", "-jar", "app.jar"]
