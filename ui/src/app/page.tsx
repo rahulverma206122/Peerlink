@@ -16,17 +16,15 @@ export default function Home() {
   const handleFileUpload = async (file: File) => {
     setUploadedFile(file);
     setIsUploading(true);
-    
+
     try {
       const formData = new FormData();
       formData.append('file', file);
-      
+
       const response = await axios.post(`${process.env.NEXT_PUBLIC_API_URL}/upload`, formData, {
-        headers: {
-          'Content-Type': 'multipart/form-data',
-        },
+        headers: { 'Content-Type': 'multipart/form-data' },
       });
-      
+
       setPort(response.data.port);
     } catch (error) {
       console.error('Error uploading file:', error);
@@ -35,42 +33,35 @@ export default function Home() {
       setIsUploading(false);
     }
   };
-  
+
   const handleDownload = async (port: number) => {
     setIsDownloading(true);
-    
+
     try {
-      // Request download from Java backend
       const response = await axios.get(`${process.env.NEXT_PUBLIC_API_URL}/download/${port}`, {
         responseType: 'blob',
       });
-      
+
       const url = window.URL.createObjectURL(new Blob([response.data]));
       const link = document.createElement('a');
       link.href = url;
-      
-      // Try to get filename from response headers
-      // Axios normalizes headers to lowercase, but we need to handle different cases
+
       const headers = response.headers;
       let contentDisposition = '';
-      
-      // Look for content-disposition header regardless of case
+
       for (const key in headers) {
         if (key.toLowerCase() === 'content-disposition') {
           contentDisposition = headers[key];
           break;
         }
       }
-      
+
       let filename = 'downloaded-file';
-      
       if (contentDisposition) {
-        const filenameMatch = contentDisposition.match(/filename="(.+)"/); // Regex to extract filename
-        if (filenameMatch && filenameMatch.length === 2) {
-          filename = filenameMatch[1];
-        }
+        const match = contentDisposition.match(/filename="(.+)"/);
+        if (match && match.length === 2) filename = match[1];
       }
-      
+
       link.setAttribute('download', filename);
       document.body.appendChild(link);
       link.click();
@@ -89,7 +80,7 @@ export default function Home() {
         <h1 className="text-4xl font-bold text-blue-600 mb-2">PeerLink</h1>
         <p className="text-xl text-gray-600">Secure P2P File Sharing</p>
       </header>
-      
+
       <div className="bg-white rounded-lg shadow-lg p-6">
         <div className="flex border-b mb-6">
           <button
@@ -113,11 +104,11 @@ export default function Home() {
             Receive a File
           </button>
         </div>
-        
+
         {activeTab === 'upload' ? (
           <div>
             <FileUpload onFileUpload={handleFileUpload} isUploading={isUploading} />
-            
+
             {uploadedFile && !isUploading && (
               <div className="mt-4 p-3 bg-gray-50 rounded-md">
                 <p className="text-sm text-gray-600">
@@ -125,30 +116,16 @@ export default function Home() {
                 </p>
               </div>
             )}
-            
-            {isUploading && (
-              <div className="mt-6 text-center">
-                <div className="inline-block animate-spin rounded-full h-8 w-8 border-4 border-blue-500 border-t-transparent"></div>
-                <p className="mt-2 text-gray-600">Uploading file...</p>
-              </div>
-            )}
-            
+
             <InviteCode port={port} />
           </div>
         ) : (
           <div>
             <FileDownload onDownload={handleDownload} isDownloading={isDownloading} />
-            
-            {isDownloading && (
-              <div className="mt-6 text-center">
-                <div className="inline-block animate-spin rounded-full h-8 w-8 border-4 border-blue-500 border-t-transparent"></div>
-                <p className="mt-2 text-gray-600">Downloading file...</p>
-              </div>
-            )}
           </div>
         )}
       </div>
-      
+
       <footer className="mt-12 text-center text-gray-500 text-sm">
         <p>PeerLink &copy; {new Date().getFullYear()} - Secure P2P File Sharing</p>
       </footer>
